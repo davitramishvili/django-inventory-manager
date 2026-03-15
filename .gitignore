@@ -43,6 +43,9 @@ coverage.xml
 .DS_Store
 Thumbs.db
 
+# Claude Code local config (may contain sensitive data)
+.claude/
+
 # Logs
 *.log
 logs/
