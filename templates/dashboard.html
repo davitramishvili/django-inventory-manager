@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Inventory Manager{% endblock %}
+
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold mb-0">Dashboard</h4>
+    <p class="text-muted mb-0 small">{{ today|date:"l, F j, Y" }}</p>
+  </div>
+</div>
+
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card p-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="icon-wrap bg-primary bg-opacity-10 text-primary"><i class="bi bi-archive"></i></div>
+        <div>
+          <div class="text-muted small">Total Items</div>
+          <div class="stat-value">{{ total_items }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card p-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="icon-wrap bg-warning bg-opacity-10 text-warning"><i class="bi bi-exclamation-triangle"></i></div>
+        <div>
+          <div class="text-muted small">Low / Out of Stock</div>
+          <div class="stat-value">{{ low_stock_count }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card p-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="icon-wrap bg-success bg-opacity-10 text-success"><i class="bi bi-cash-stack"></i></div>
+        <div>
+          <div class="text-muted small">Today's Revenue</div>
+          <div class="stat-value">{{ today_revenue|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card p-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="icon-wrap bg-info bg-opacity-10 text-info"><i class="bi bi-graph-up-arrow"></i></div>
+        <div>
+          <div class="text-muted small">Today's Profit</div>
+          <div class="stat-value">{{ today_profit|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart + Recent Sales -->
+<div class="row g-3 mb-3">
+
+  <!-- 7-day revenue chart -->
+  <div class="col-12 col-xl-5">
+    <div class="card table-card p-3">
+      <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart me-2 text-primary"></i>Revenue — Last 7 Days</h6>
+      <canvas id="revenueChart" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- Recent Sales -->
+  <div class="col-12 col-xl-7">
+    <div class="card table-card">
+      <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+        <h6 class="fw-bold mb-0"><i class="bi bi-receipt me-2 text-primary"></i>Recent Sales</h6>
+      </div>
+      <div class="card-body px-0 pb-0">
+        {% if recent_sales %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">#</th>
+                <th>Buyer</th>
+                <th>Items</th>
+                <th>Revenue</th>
+                <th class="pe-4">Profit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sale in recent_sales %}
+              <tr>
+                <td class="ps-4 text-muted">{{ sale.id }}</td>
+                <td>{{ sale.buyer_name|default:"—" }}</td>
+                <td>
+                  {% for line in sale.items.all %}
+                    <span class="badge bg-light text-dark border">{{ line.quantity }}× {{ line.item.name }}</span>
+                  {% endfor %}
+                </td>
+                <td class="fw-semibold">{{ sale.currency }} {{ sale.total_revenue|floatformat:2 }}</td>
+                <td class="pe-4 text-success fw-semibold">{{ sale.currency }} {{ sale.total_profit|floatformat:2 }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <p class="text-muted text-center py-4 mb-0">No sales recorded yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Stock Alerts -->
+<div class="row g-3">
+  <div class="col-12 col-xl-5">
+    <div class="card table-card">
+      <div class="card-header bg-white border-0 pt-3 pb-0 px-4">
+        <h6 class="fw-bold mb-0"><i class="bi bi-exclamation-circle me-2 text-warning"></i>Stock Alerts</h6>
+      </div>
+      <div class="card-body px-0 pb-0">
+        {% if low_stock_items %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Item</th>
+                <th>SKU</th>
+                <th>Qty</th>
+                <th class="pe-4">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in low_stock_items %}
+              <tr>
+                <td class="ps-4 fw-semibold">{{ item.name }}</td>
+                <td class="text-muted small font-monospace">{{ item.sku }}</td>
+                <td class="fw-bold {% if item.quantity == 0 %}text-danger{% else %}text-warning{% endif %}">{{ item.quantity }}</td>
+                <td class="pe-4">
+                  <span class="badge rounded-pill badge-status-{{ item.status }} px-2 py-1">{{ item.get_status_display }}</span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <p class="text-muted text-center py-4 mb-0">
+            <i class="bi bi-check-circle text-success me-1"></i>All items are well stocked.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const ctx = document.getElementById('revenueChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{ chart_labels|safe }},
+    datasets: [{
+      label: 'Revenue',
+      data: {{ chart_data|safe }},
+      backgroundColor: 'rgba(13,110,253,0.15)',
+      borderColor: 'rgba(13,110,253,0.8)',
+      borderWidth: 2,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

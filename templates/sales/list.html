@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Sales — Inventory Manager{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold mb-0">Sales</h4>
+    <p class="text-muted small mb-0">{{ sales.count }} sale{{ sales.count|pluralize }} total</p>
+  </div>
+  <a href="{% url 'sale_new' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Record Sale
+  </a>
+</div>
+
+<div class="card table-card">
+  <div class="card-body px-0 pb-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">#</th>
+            <th>Buyer</th>
+            <th>Items Sold</th>
+            <th>Revenue</th>
+            <th>Cost</th>
+            <th>Profit</th>
+            <th>Date</th>
+            <th class="pe-4 text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sale in sales %}
+          <tr>
+            <td class="ps-4 text-muted">{{ sale.id }}</td>
+            <td class="fw-semibold">{{ sale.buyer_name|default:"—" }}</td>
+            <td>
+              {% for line in sale.items.all %}
+                <span class="badge bg-light text-dark border me-1">{{ line.quantity }}× {{ line.item.name }}</span>
+              {% endfor %}
+            </td>
+            <td class="fw-semibold">{{ sale.currency }} {{ sale.total_revenue|floatformat:2 }}</td>
+            <td class="text-muted">{{ sale.currency }} {{ sale.total_cost|floatformat:2 }}</td>
+            <td class="text-success fw-semibold">{{ sale.currency }} {{ sale.total_profit|floatformat:2 }}</td>
+            <td class="text-muted small">{{ sale.created_at|date:"M j, Y H:i" }}</td>
+            <td class="pe-4 text-end">
+              <button class="btn btn-sm btn-outline-danger"
+                      data-bs-toggle="modal" data-bs-target="#deleteModal"
+                      data-id="{{ sale.pk }}"
+                      data-buyer="{{ sale.buyer_name|default:'Anonymous' }}">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center text-muted py-5">No sales yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content rounded-4">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold text-danger"><i class="bi bi-trash me-2"></i>Delete Sale</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Delete sale <strong id="deleteSaleId"></strong> for <strong id="deleteBuyer"></strong>?</p>
+        <p class="text-muted small">Stock will be restored automatically.</p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form method="post" id="deleteForm" action="">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Delete & Restore Stock</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('deleteModal').addEventListener('show.bs.modal', function(e) {
+  const btn = e.relatedTarget;
+  const id = btn.dataset.id;
+  document.getElementById('deleteSaleId').textContent = '#' + id;
+  document.getElementById('deleteBuyer').textContent  = btn.dataset.buyer;
+  document.getElementById('deleteForm').action = '/sales/' + id + '/delete/';
+});
+</script>
+{% endblock %}

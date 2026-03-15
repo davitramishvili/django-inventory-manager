@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Activity Log — Inventory Manager{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold mb-0">Activity Log</h4>
+    <p class="text-muted small mb-0">Last 200 actions across all users</p>
+  </div>
+</div>
+
+<div class="card table-card">
+  <div class="card-body px-0 pb-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">When</th>
+            <th>User</th>
+            <th>Action</th>
+            <th class="pe-4">Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td class="ps-4 text-muted small text-nowrap">{{ log.created_at|date:"M j, Y H:i" }}</td>
+            <td class="fw-semibold">{{ log.user.username|default:"system" }}</td>
+            <td>
+              <span class="badge rounded-pill
+                {% if 'Deleted' in log.action %}bg-danger
+                {% elif 'Added' in log.action or 'Recorded' in log.action %}bg-success
+                {% elif 'Changed' in log.action or 'Edited' in log.action %}bg-warning text-dark
+                {% else %}bg-secondary{% endif %}">
+                {{ log.action }}
+              </span>
+            </td>
+            <td class="pe-4 text-muted">{{ log.detail }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center text-muted py-5">No activity yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

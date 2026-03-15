@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Record Sale — Inventory Manager{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4 gap-3">
+  <a href="{% url 'sales_list' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h4 class="fw-bold mb-0">Record New Sale</h4>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="card table-card p-4">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="row g-3 mb-4">
+          <div class="col-8">
+            <label class="form-label fw-semibold">Buyer Name <span class="text-muted fw-normal">(optional)</span></label>
+            <input type="text" name="buyer_name" class="form-control"
+                   value="{{ post.buyer_name|default:'' }}" placeholder="Customer name">
+          </div>
+          <div class="col-4">
+            <label class="form-label fw-semibold">Currency</label>
+            <select name="currency" class="form-select">
+              <option value="GEL" {% if post.currency == 'GEL' or not post.currency %}selected{% endif %}>GEL</option>
+              <option value="USD" {% if post.currency == 'USD' %}selected{% endif %}>USD</option>
+            </select>
+          </div>
+        </div>
+
+        <h6 class="fw-bold mb-3">Items</h6>
+        <div id="lineItems">
+          <div class="row g-2 mb-2 line-item align-items-end">
+            <div class="col-5">
+              <label class="form-label fw-semibold small">Product</label>
+              <select name="item_id" class="form-select item-select">
+                <option value="">— select item —</option>
+                {% for item in items %}
+                <option value="{{ item.pk }}">{{ item.name }} ({{ item.quantity }} in stock)</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-3">
+              <label class="form-label fw-semibold small">Qty</label>
+              <input type="number" name="quantity" class="form-control" min="1" value="1">
+            </div>
+            <div class="col-3">
+              <label class="form-label fw-semibold small">Sale Price</label>
+              <input type="number" name="sale_price" class="form-control" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div class="col-1">
+              <button type="button" class="btn btn-outline-danger btn-sm remove-line" style="display:none;">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" id="addLine" class="btn btn-outline-secondary btn-sm mt-2">
+          <i class="bi bi-plus me-1"></i>Add Another Item
+        </button>
+
+        <hr class="my-4">
+
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{% url 'sales_list' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check-lg me-1"></i>Record Sale
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const itemOptions = `{% for item in items %}<option value="{{ item.pk }}">{{ item.name }} ({{ item.quantity }} in stock)</option>{% endfor %}`;
+
+document.getElementById('addLine').addEventListener('click', function() {
+  const container = document.getElementById('lineItems');
+  const newRow = document.createElement('div');
+  newRow.className = 'row g-2 mb-2 line-item align-items-end';
+  newRow.innerHTML = `
+    <div class="col-5">
+      <select name="item_id" class="form-select item-select">
+        <option value="">— select item —</option>
+        ${itemOptions}
+      </select>
+    </div>
+    <div class="col-3">
+      <input type="number" name="quantity" class="form-control" min="1" value="1">
+    </div>
+    <div class="col-3">
+      <input type="number" name="sale_price" class="form-control" step="0.01" min="0" placeholder="0.00">
+    </div>
+    <div class="col-1">
+      <button type="button" class="btn btn-outline-danger btn-sm remove-line">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>`;
+  container.appendChild(newRow);
+  updateRemoveButtons();
+});
+
+document.getElementById('lineItems').addEventListener('click', function(e) {
+  if (e.target.closest('.remove-line')) {
+    e.target.closest('.line-item').remove();
+    updateRemoveButtons();
+  }
+});
+
+function updateRemoveButtons() {
+  const lines = document.querySelectorAll('.line-item');
+  lines.forEach((line, i) => {
+    const btn = line.querySelector('.remove-line');
+    btn.style.display = lines.length > 1 ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

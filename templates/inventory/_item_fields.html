@@ -1,0 +1,29 @@
+<div class="row g-3">
+  <div class="col-12">
+    <label class="form-label fw-semibold">Name</label>
+    <input type="text" name="name" class="form-control" required>
+  </div>
+  <div class="col-12">
+    <label class="form-label fw-semibold">Category</label>
+    <input type="text" name="category" class="form-control" required placeholder="e.g. Electronics, Furniture">
+  </div>
+  <div class="col-6">
+    <label class="form-label fw-semibold">Quantity</label>
+    <input type="number" name="quantity" class="form-control" value="0" min="0" required>
+  </div>
+  <div class="col-6">
+    <label class="form-label fw-semibold">Reorder Level</label>
+    <input type="number" name="reorder_level" class="form-control" value="5" min="0" required>
+  </div>
+  <div class="col-6">
+    <label class="form-label fw-semibold">Purchase Price</label>
+    <input type="number" name="purchase_price" class="form-control" step="0.01" min="0" required>
+  </div>
+  <div class="col-6">
+    <label class="form-label fw-semibold">Currency</label>
+    <select name="currency" class="form-select">
+      <option value="GEL">GEL</option>
+      <option value="USD">USD</option>
+    </select>
+  </div>
+</div>

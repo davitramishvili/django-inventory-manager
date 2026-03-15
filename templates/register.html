@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Register — Inventory Manager{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-12 col-sm-10 col-md-6 col-lg-4">
+
+    <div class="text-center mb-4">
+      <div class="display-6 fw-bold text-dark">
+        <i class="bi bi-box-seam text-primary me-2"></i>Inventory Manager
+      </div>
+      <p class="text-muted mt-1">Create an account</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+      <div class="card-body">
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Username</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+              <input type="text" name="username" class="form-control border-start-0 ps-0 {% if errors.username %}is-invalid{% endif %}"
+                     value="{{ old.username|default:'' }}" placeholder="Choose a username" required autofocus>
+            </div>
+            {% if errors.username %}<div class="text-danger small mt-1">{{ errors.username }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Email <span class="text-muted fw-normal">(optional)</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+              <input type="email" name="email" class="form-control border-start-0 ps-0"
+                     value="{{ old.email|default:'' }}" placeholder="you@example.com">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+              <input type="password" name="password1" class="form-control border-start-0 ps-0 {% if errors.password1 %}is-invalid{% endif %}"
+                     placeholder="At least 8 characters" required>
+            </div>
+            {% if errors.password1 %}<div class="text-danger small mt-1">{{ errors.password1 }}</div>{% endif %}
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Confirm Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock-fill text-muted"></i></span>
+              <input type="password" name="password2" class="form-control border-start-0 ps-0 {% if errors.password2 %}is-invalid{% endif %}"
+                     placeholder="Repeat password" required>
+            </div>
+            {% if errors.password2 %}<div class="text-danger small mt-1">{{ errors.password2 }}</div>{% endif %}
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+            <i class="bi bi-person-plus me-2"></i>Create Account
+          </button>
+        </form>
+
+        <hr class="my-3">
+        <p class="text-center text-muted small mb-0">
+          Already have an account? <a href="{% url 'login' %}">Sign in</a>
+        </p>
+
+      </div>
+    </div>
+
+    <div class="alert alert-info rounded-3 mt-3 small">
+      <i class="bi bi-info-circle me-1"></i>
+      New accounts have <strong>read-only</strong> access to the product catalog. An admin must grant employee access.
+    </div>
+
+  </div>
+</div>
+{% endblock %}
